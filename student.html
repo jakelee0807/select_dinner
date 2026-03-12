@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>석식 신청</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #f5f5f5;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 80px;
+  color: #111;
+  font-size: 15px;
+}
+
+.top-bar {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 20px 20px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.top-bar .label {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.top-bar h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.03em;
+}
+
+.top-bar h1 em {
+  color: #4CAF50;
+  font-style: normal;
+}
+
+.section {
+  background: #fff;
+  margin: 12px 16px;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #ececec;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  gap: 12px;
+}
+
+.field {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+}
+
+select, input[type="text"] {
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #111;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 11px 14px;
+  width: 100%;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select:focus, input[type="text"]:focus {
+  border-color: #4CAF50;
+  background: #fff;
+}
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap::after {
+  content: "▾";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.err {
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 4px;
+  display: none;
+}
+
+.err.show { display: block; }
+
+/* 메뉴 리스트 */
+.loading-box {
+  text-align: center;
+  padding: 32px 0;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.menu-list {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-item {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 14px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  background: #fafafa;
+  -webkit-transition: all 0.15s;
+  transition: all 0.15s;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.menu-item.selected {
+  border-color: #4CAF50;
+  background: #f1f9f1;
+}
+
+.check-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  font-size: 13px;
+  color: transparent;
+  -webkit-transition: all 0.15s;
+  transition: all 0.15s;
+}
+
+.menu-item.selected .check-circle {
+  background: #4CAF50;
+  border-color: #4CAF50;
+  color: #fff;
+}
+
+.menu-info { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; }
+
+.menu-date {
+  font-size: 11px;
+  color: #aaa;
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+.menu-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* 제출 버튼 */
+.btn-wrap {
+  padding: 0 16px;
+  margin-top: 8px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 17px;
+  background: #4CAF50;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  -webkit-transition: background 0.15s;
+  transition: background 0.15s;
+  letter-spacing: -0.01em;
+}
+
+.submit-btn:active { background: #388E3C; }
+.submit-btn:disabled { background: #bdbdbd; cursor: not-allowed; }
+
+/* 완료 화면 */
+.done-screen {
+  display: none;
+  text-align: center;
+  padding: 80px 32px;
+}
+.done-screen.show { display: block; }
+
+.done-icon {
+  width: 72px;
+  height: 72px;
+  background: #e8f5e9;
+  border-radius: 50%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 32px;
+}
+
+.done-screen h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+}
+
+.done-screen p {
+  color: #888;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.done-screen .again-btn {
+  margin-top: 32px;
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1.5px solid #4CAF50;
+  border-radius: 10px;
+  color: #4CAF50;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  background: #fff;
+  cursor: pointer;
+}
+
+.notice {
+  margin: 0 16px 12px;
+  padding: 12px 16px;
+  background: #fff8e1;
+  border-radius: 10px;
+  border: 1px solid #ffe082;
+  font-size: 13px;
+  color: #795548;
+  line-height: 1.5;
+  display: none;
+}
+.notice.show { display: block; }
+</style>
+</head>
+<body>
+
+<div id="formView">
+  <div class="top-bar">
+    <div class="label">고려대 FMBA</div>
+    <h1>석식 <em>신청</em></h1>
+  </div>
+
+  <div id="noMenuNotice" class="notice">
+    ⚠️ 현재 등록된 메뉴가 없습니다. 담당자에게 문의하세요.
+  </div>
+
+  <!-- 기본 정보 -->
+  <div class="section">
+    <div class="section-title">기본 정보</div>
+    <div class="row">
+      <div class="field">
+        <label for="gisu">기수</label>
+        <div class="select-wrap">
+          <select id="gisu">
+            <option value="">선택</option>
+            <option value="19기">19기</option>
+            <option value="20기">20기</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="name">이름</label>
+        <input type="text" id="name" placeholder="홍길동" maxlength="10" autocomplete="name">
+      </div>
+    </div>
+    <div class="err" id="infoErr">기수와 이름을 모두 입력해 주세요.</div>
+  </div>
+
+  <!-- 메뉴 선택 -->
+  <div class="section">
+    <div class="section-title">메뉴 선택 (중복 가능)</div>
+    <div id="menuArea">
+      <div class="loading-box">메뉴를 불러오는 중...</div>
+    </div>
+    <div class="err" id="menuErr">신청할 메뉴를 1개 이상 선택해 주세요.</div>
+  </div>
+
+  <div class="btn-wrap">
+    <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">신청하기</button>
+  </div>
+</div>
+
+<!-- 완료 화면 -->
+<div class="done-screen" id="doneView">
+  <div class="done-icon">✓</div>
+  <h2>신청 완료!</h2>
+  <p id="doneMsg">석식 신청이 접수되었습니다.<br>수정이 필요하면 다시 제출하면 됩니다.</p>
+  <button class="again-btn" onclick="resetForm()">다시 수정하기</button>
+</div>
+
+<script>
+// ★ 여기에 Google Apps Script 웹앱 URL을 넣으세요
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpSRuEfW3DY1MGSeSCZVOIxhZJWCAhnb-nPoOD0VZ2_DcG_sHSpPIxKv0MwqqYnk_J/exec';
+
+var selectedDates = {};
+var menus = [];
+
+function xhr(method, url, data, cb) {
+  var req = new XMLHttpRequest();
+  var fullUrl = method === 'GET' ? url + '?' + data : url;
+  req.open(method, fullUrl, true);
+  if (method === 'POST') req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  req.onreadystatechange = function() {
+    if (req.readyState === 4) {
+      if (req.status === 200) {
+        try { cb(null, JSON.parse(req.responseText)); }
+        catch(e) { cb(null, req.responseText); }
+      } else {
+        cb('오류: ' + req.status);
+      }
+    }
+  };
+  req.send(method === 'POST' ? data : null);
+}
+
+function isDeadlinePassed(menuList) {
+  if (!menuList || menuList.length === 0) return false;
+  var firstDate = menuList[0].date;
+  var deadline = new Date(firstDate + 'T00:01:00+09:00');
+  return new Date() >= deadline;
+}
+
+function showClosed() {
+  document.getElementById('formView').style.display = 'none';
+  var d = document.getElementById('doneView');
+  d.className = 'done-screen show';
+  d.innerHTML =
+    '<div class="done-icon" style="background:#fff3e0;font-size:32px">!</div>' +
+    '<h2>신청 마감</h2>' +
+    '<p>이번 주 석식 신청이 마감되었습니다.<br>다음 주 메뉴가 등록되면 다시 신청할 수 있습니다.</p>';
+}
+
+function loadMenus() {
+  var area = document.getElementById('menuArea');
+  xhr('GET', APPS_SCRIPT_URL, 'action=getMenus', function(err, res) {
+    if (err || !res || !res.menus || res.menus.length === 0) {
+      area.innerHTML = '';
+      document.getElementById('noMenuNotice').className = 'notice show';
+      return;
+    }
+    menus = res.menus;
+    if (isDeadlinePassed(menus)) { showClosed(); return; }
+    renderMenus();
+  });
+}
+
+function renderMenus() {
+  var area = document.getElementById('menuArea');
+  var html = '<div class="menu-list">';
+  for (var i = 0; i < menus.length; i++) {
+    var m = menus[i];
+    html += '<div class="menu-item" id="mi_' + i + '" onclick="toggleMenu(' + i + ')">';
+    html += '<div class="check-circle">✓</div>';
+    html += '<div class="menu-info">';
+    html += '<div class="menu-date">' + m.date + ' (' + m.day + ')</div>';
+    html += '<div class="menu-name">' + m.menu + '</div>';
+    html += '</div></div>';
+  }
+  html += '</div>';
+  area.innerHTML = html;
+}
+
+function toggleMenu(idx) {
+  var key = menus[idx].date;
+  if (selectedDates[key]) {
+    delete selectedDates[key];
+    document.getElementById('mi_' + idx).className = 'menu-item';
+  } else {
+    selectedDates[key] = true;
+    document.getElementById('mi_' + idx).className = 'menu-item selected';
+  }
+}
+
+function handleSubmit() {
+  var gisu = document.getElementById('gisu').value.trim();
+  var name = document.getElementById('name').value.trim();
+  var infoErr = document.getElementById('infoErr');
+  var menuErr = document.getElementById('menuErr');
+  infoErr.className = 'err';
+  menuErr.className = 'err';
+
+  var valid = true;
+  if (!gisu || !name) { infoErr.className = 'err show'; valid = false; }
+
+  var selected = [];
+  for (var k in selectedDates) { selected.push(k); }
+  if (selected.length === 0) { menuErr.className = 'err show'; valid = false; }
+  if (!valid) return;
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '제출 중...';
+
+  var params = 'action=submit&gisu=' + encodeURIComponent(gisu) + '&name=' + encodeURIComponent(name) + '&dates=' + encodeURIComponent(selected.join(','));
+
+  xhr('GET', APPS_SCRIPT_URL, params, function(err, res) {
+    btn.disabled = false;
+    btn.textContent = '신청하기';
+    if (err) { alert('오류가 발생했습니다. 다시 시도해 주세요.'); return; }
+    document.getElementById('formView').style.display = 'none';
+    var msg = gisu + ' ' + name + '님의 신청이 완료되었습니다.\n선택한 날짜: ' + selected.join(', ');
+    document.getElementById('doneMsg').innerHTML = msg.replace('\n', '<br>');
+    document.getElementById('doneView').className = 'done-screen show';
+  });
+}
+
+function resetForm() {
+  selectedDates = {};
+  document.getElementById('doneView').className = 'done-screen';
+  document.getElementById('formView').style.display = '';
+  document.getElementById('gisu').value = '';
+  document.getElementById('name').value = '';
+  renderMenus();
+}
+
+loadMenus();
+</script>
+</body>
+</html>

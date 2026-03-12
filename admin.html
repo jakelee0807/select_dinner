@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>석식 담당자</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #f0f0f0;
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 80px;
+  color: #111;
+  font-size: 15px;
+}
+
+.top-bar {
+  background: #1a1a1a;
+  padding: 20px 20px 16px;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.top-bar .label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.top-bar h1 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+.top-bar h1 em { color: #c8f135; font-style: normal; }
+.top-bar .week-info { font-size: 12px; color: #666; margin-top: 6px; }
+
+.tabs {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 68px;
+  z-index: 9;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+  min-width: 80px;
+  padding: 13px 6px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #aaa;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  white-space: nowrap;
+}
+.tab-btn.active { color: #111; border-bottom-color: #c8f135; }
+
+.section {
+  background: #fff;
+  margin: 12px 16px;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+/* 메뉴 입력 */
+.menu-input-row {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+.menu-input-row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
+.date-row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  gap: 8px;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+}
+
+input[type="date"], input[type="text"], input[type="password"] {
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #111;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="date"] { width: 148px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+input[type="text"] { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; }
+input:focus { border-color: #4CAF50; background: #fff; }
+
+.add-row-btn {
+  width: 100%;
+  padding: 12px;
+  background: #f5f5f5;
+  border: 1.5px dashed #ccc;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+  margin-top: 12px;
+}
+.remove-btn {
+  background: none; border: none; color: #bbb; font-size: 20px;
+  cursor: pointer; padding: 4px; line-height: 1;
+  -webkit-flex-shrink: 0; flex-shrink: 0;
+}
+
+/* 버튼 */
+.btn-wrap { padding: 0 16px; margin-top: 8px; }
+.primary-btn {
+  width: 100%;
+  padding: 17px;
+  background: #1a1a1a;
+  color: #c8f135;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.primary-btn:active { background: #333; }
+.primary-btn:disabled { background: #bdbdbd; color: #fff; cursor: not-allowed; }
+
+/* 요약 카드 */
+.summary-row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.summary-card {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+  min-width: 80px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.summary-card .num { font-size: 24px; font-weight: 700; color: #1a1a1a; }
+.summary-card .lbl { font-size: 11px; color: #888; margin-top: 4px; white-space: nowrap; }
+
+/* 테이블 공통 */
+.result-controls {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+.filter-select {
+  padding: 9px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.refresh-btn {
+  padding: 9px 16px;
+  background: #f5f5f5;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -4px;
+}
+table { border-collapse: collapse; min-width: 100%; font-size: 13px; }
+th {
+  background: #f5f5f5;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+}
+td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  white-space: nowrap;
+}
+tr:last-child td { border-bottom: none; }
+
+/* 출력테이블 전용 */
+.pivot-table th { background: #1a1a1a; color: #c8f135; }
+.pivot-table th.col-fixed { background: #2a2a2a; color: #fff; }
+.tag-yes {
+  display: inline-block;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.loading-box { text-align: center; padding: 32px; color: #aaa; font-size: 14px; }
+.empty-box { text-align: center; padding: 32px; color: #bbb; font-size: 14px; }
+
+/* 비밀번호 화면 */
+.pw-screen {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  min-height: 70vh;
+  gap: 16px;
+  padding: 32px;
+  text-align: center;
+}
+.pw-screen .lock { font-size: 40px; margin-bottom: 4px; }
+.pw-screen h2 { font-size: 20px; font-weight: 700; }
+.pw-screen p { color: #888; font-size: 14px; }
+.pw-screen input[type="password"] {
+  width: 100%; max-width: 280px;
+  padding: 14px 16px;
+  font-size: 20px;
+  text-align: center;
+  letter-spacing: 0.25em;
+}
+.pw-screen button {
+  width: 100%; max-width: 280px;
+  padding: 15px;
+  background: #1a1a1a;
+  color: #c8f135;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.pw-err { color: #e53935; font-size: 13px; display: none; }
+.pw-err.show { display: block; }
+
+.week-badge {
+  display: inline-block;
+  background: #f0f0f0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 14px;
+}
+</style>
+</head>
+<body>
+
+<!-- 비밀번호 화면 -->
+<div id="pwScreen" class="pw-screen">
+  <div class="lock">🔒</div>
+  <h2>담당자 전용</h2>
+  <p>접근 비밀번호를 입력하세요</p>
+  <input type="password" id="pwInput" placeholder="••••" maxlength="20"
+    onkeydown="if(event.keyCode===13)checkPw()">
+  <div class="pw-err" id="pwErr">비밀번호가 올바르지 않습니다.</div>
+  <button onclick="checkPw()">확인</button>
+</div>
+
+<!-- 메인 화면 -->
+<div id="mainScreen" style="display:none">
+  <div class="top-bar">
+    <div class="label">고려대 FMBA · 담당자</div>
+    <h1>석식 <em>관리</em></h1>
+    <div class="week-info" id="weekInfo"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab1" onclick="showTab(1)">📋 메뉴 입력</button>
+    <button class="tab-btn" id="tab2" onclick="showTab(2)">📊 신청 현황</button>
+    <button class="tab-btn" id="tab3" onclick="showTab(3)">📋 출력 테이블</button>
+  </div>
+
+  <!-- 탭1: 메뉴 입력 -->
+  <div id="tabContent1">
+    <div class="section">
+      <div class="section-title">이번 주 메뉴</div>
+      <div id="menuRows"></div>
+      <button class="add-row-btn" onclick="addMenuRow('','')">+ 날짜 추가</button>
+    </div>
+    <div class="btn-wrap">
+      <button class="primary-btn" id="saveBtn" onclick="saveMenus()">저장하기</button>
+    </div>
+  </div>
+
+  <!-- 탭2: 신청 현황 (raw) -->
+  <div id="tabContent2" style="display:none">
+    <div class="section">
+      <div class="section-title">일별 요약</div>
+      <div class="summary-row" id="summaryRow"><div class="loading-box">불러오는 중...</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">신청 목록</div>
+      <div class="result-controls">
+        <select class="filter-select" id="filterGisu" onchange="applyFilter()">
+          <option value="">전체 기수</option>
+          <option value="19기">19기</option>
+          <option value="20기">20기</option>
+        </select>
+        <select class="filter-select" id="filterDate" onchange="applyFilter()">
+          <option value="">전체 날짜</option>
+        </select>
+        <button class="refresh-btn" onclick="loadResults()">↺</button>
+      </div>
+      <div id="resultArea"><div class="loading-box">불러오는 중...</div></div>
+    </div>
+  </div>
+
+  <!-- 탭3: 출력 테이블 (피벗) -->
+  <div id="tabContent3" style="display:none">
+    <div class="section">
+      <div class="section-title">출력 테이블 (이번 주)</div>
+      <div class="result-controls">
+        <select class="filter-select" id="filterGisu3" onchange="applyPivotFilter()">
+          <option value="">전체 기수</option>
+          <option value="19기">19기</option>
+          <option value="20기">20기</option>
+        </select>
+        <button class="refresh-btn" onclick="loadOutputTable()">↺ 새로고침</button>
+      </div>
+      <div id="pivotArea"><div class="loading-box">불러오는 중...</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpSRuEfW3DY1MGSeSCZVOIxhZJWCAhnb-nPoOD0VZ2_DcG_sHSpPIxKv0MwqqYnk_J/exec';
+var ADMIN_PASSWORD  = '0807'; // ← 원하는 비밀번호로 변경
+
+var allResults  = [];
+var pivotData   = { headers: [], rows: [] };
+var rowCount    = 0;
+
+// ── 비밀번호 ─────────────────────────────────────────────
+function checkPw() {
+  var pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('pwScreen').style.display = 'none';
+    document.getElementById('mainScreen').style.display = 'block';
+    loadCurrentMenus();
+  } else {
+    document.getElementById('pwErr').className = 'pw-err show';
+  }
+}
+
+// ── 탭 전환 ──────────────────────────────────────────────
+function showTab(n) {
+  for (var i = 1; i <= 3; i++) {
+    document.getElementById('tabContent' + i).style.display = i === n ? '' : 'none';
+    document.getElementById('tab' + i).className = 'tab-btn' + (i === n ? ' active' : '');
+  }
+  if (n === 2) loadResults();
+  if (n === 3) loadOutputTable();
+}
+
+// ── 요일 계산 ────────────────────────────────────────────
+function getDayKor(dateStr) {
+  var days = ['일', '월', '화', '수', '목', '금', '토'];
+  return days[new Date(dateStr).getDay()];
+}
+
+// ── 메뉴 행 관리 ─────────────────────────────────────────
+function addMenuRow(dateVal, menuVal) {
+  var container = document.getElementById('menuRows');
+  var id = rowCount++;
+  var div = document.createElement('div');
+  div.className = 'menu-input-row';
+  div.id = 'row_' + id;
+  div.innerHTML =
+    '<div class="date-row">' +
+    '<input type="date" id="d_' + id + '" value="' + (dateVal || '') + '">' +
+    '<input type="text" id="m_' + id + '" placeholder="메뉴명" value="' + (menuVal || '') + '">' +
+    '<button class="remove-btn" onclick="removeRow(' + id + ')">×</button>' +
+    '</div>';
+  container.appendChild(div);
+}
+
+function removeRow(id) {
+  var el = document.getElementById('row_' + id);
+  if (el) el.parentNode.removeChild(el);
+}
+
+function loadCurrentMenus() {
+  xhr('action=getMenus', function(err, res) {
+    document.getElementById('menuRows').innerHTML = '';
+    rowCount = 0;
+    if (!err && res && res.menus && res.menus.length > 0) {
+      for (var i = 0; i < res.menus.length; i++) {
+        addMenuRow(res.menus[i].date, res.menus[i].menu);
+      }
+      document.getElementById('weekInfo').textContent = '현재 주차: ' + res.menus[0].date + ' ~';
+    } else {
+      for (var j = 0; j < 5; j++) addMenuRow('', '');
+    }
+  });
+}
+
+function saveMenus() {
+  var rows = document.getElementById('menuRows').querySelectorAll('.menu-input-row');
+  var data = [];
+  for (var i = 0; i < rows.length; i++) {
+    var id = rows[i].id.replace('row_', '');
+    var dEl = document.getElementById('d_' + id);
+    var mEl = document.getElementById('m_' + id);
+    if (dEl && mEl && dEl.value && mEl.value.trim()) {
+      data.push(dEl.value + '|' + getDayKor(dEl.value) + '|' + mEl.value.trim());
+    }
+  }
+  if (!data.length) { alert('날짜와 메뉴를 입력해 주세요.'); return; }
+
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  xhr('action=saveMenus&menus=' + encodeURIComponent(data.join(';')), function(err) {
+    btn.disabled = false; btn.textContent = '저장하기';
+    if (err) { alert('저장 실패. 다시 시도해 주세요.'); return; }
+    alert('메뉴가 저장되었습니다!');
+    loadCurrentMenus();
+  });
+}
+
+// ── 탭2: 신청 현황 ───────────────────────────────────────
+function loadResults() {
+  document.getElementById('resultArea').innerHTML = '<div class="loading-box">불러오는 중...</div>';
+  document.getElementById('summaryRow').innerHTML = '<div class="loading-box">불러오는 중...</div>';
+
+  xhr('action=getResults', function(err, res) {
+    if (err || !res || !res.results) {
+      document.getElementById('resultArea').innerHTML = '<div class="empty-box">불러올 수 없습니다.</div>';
+      return;
+    }
+    allResults = res.results;
+    if (res.weekKey) document.getElementById('weekInfo').textContent = '현재 주차: ' + res.weekKey + ' ~';
+    buildDateFilter(res.dates || []);
+    renderSummary(res.summary || []);
+    applyFilter();
+  });
+}
+
+function buildDateFilter(dates) {
+  var sel = document.getElementById('filterDate');
+  sel.innerHTML = '<option value="">전체 날짜</option>';
+  for (var i = 0; i < dates.length; i++) {
+    var opt = document.createElement('option');
+    opt.value = dates[i]; opt.textContent = dates[i];
+    sel.appendChild(opt);
+  }
+}
+
+function renderSummary(summary) {
+  var box = document.getElementById('summaryRow');
+  if (!summary.length) { box.innerHTML = '<div class="empty-box">신청 내역 없음</div>'; return; }
+  var html = '';
+  for (var i = 0; i < summary.length; i++) {
+    html += '<div class="summary-card"><div class="num">' + summary[i].count +
+      '</div><div class="lbl">' + summary[i].label + '</div></div>';
+  }
+  box.innerHTML = html;
+}
+
+function applyFilter() {
+  var gisu = document.getElementById('filterGisu').value;
+  var date = document.getElementById('filterDate').value;
+  var filtered = [];
+  for (var i = 0; i < allResults.length; i++) {
+    var r = allResults[i];
+    if (gisu && r.gisu !== gisu) continue;
+    if (date && r.date !== date) continue;
+    filtered.push(r);
+  }
+  renderResultTable(filtered);
+}
+
+function renderResultTable(data) {
+  var area = document.getElementById('resultArea');
+  if (!data.length) { area.innerHTML = '<div class="empty-box">신청 내역 없음</div>'; return; }
+  var html = '<div class="table-wrap"><table><thead><tr>' +
+    '<th>기수</th><th>이름</th><th>날짜</th><th>메뉴</th><th>제출시각</th>' +
+    '</tr></thead><tbody>';
+  for (var i = 0; i < data.length; i++) {
+    var r = data[i];
+    html += '<tr><td>' + r.gisu + '</td><td>' + r.name + '</td><td>' +
+      r.date + '</td><td>' + r.menu + '</td><td>' + r.time + '</td></tr>';
+  }
+  html += '</tbody></table></div>';
+  area.innerHTML = html;
+}
+
+// ── 탭3: 출력 테이블 ─────────────────────────────────────
+function loadOutputTable() {
+  document.getElementById('pivotArea').innerHTML = '<div class="loading-box">불러오는 중...</div>';
+  xhr('action=getOutputTable', function(err, res) {
+    if (err || !res || !res.headers) {
+      document.getElementById('pivotArea').innerHTML = '<div class="empty-box">불러올 수 없습니다.</div>';
+      return;
+    }
+    pivotData = res;
+    if (res.weekKey) document.getElementById('weekInfo').textContent = '현재 주차: ' + res.weekKey + ' ~';
+    applyPivotFilter();
+  });
+}
+
+function applyPivotFilter() {
+  var gisu = document.getElementById('filterGisu3').value;
+  var rows = [];
+  for (var i = 0; i < pivotData.rows.length; i++) {
+    if (gisu && pivotData.rows[i][0] !== gisu) continue;
+    rows.push(pivotData.rows[i]);
+  }
+  renderPivotTable(pivotData.headers, rows);
+}
+
+function renderPivotTable(headers, rows) {
+  var area = document.getElementById('pivotArea');
+  if (!headers || !headers.length) {
+    area.innerHTML = '<div class="empty-box">데이터 없음</div>'; return;
+  }
+  var html = '<div class="table-wrap"><table class="pivot-table"><thead><tr>';
+  for (var h = 0; h < headers.length; h++) {
+    var cls = h < 2 ? ' class="col-fixed"' : '';
+    html += '<th' + cls + '>' + headers[h].replace('\n', '<br>') + '</th>';
+  }
+  html += '</tr></thead><tbody>';
+
+  if (!rows.length) {
+    html += '<tr><td colspan="' + headers.length + '" style="text-align:center;padding:24px;color:#bbb">신청 내역 없음</td></tr>';
+  } else {
+    for (var i = 0; i < rows.length; i++) {
+      html += '<tr>';
+      for (var j = 0; j < rows[i].length; j++) {
+        var val = rows[i][j];
+        if (j >= 2 && val === '신청') {
+          html += '<td><span class="tag-yes">신청</span></td>';
+        } else {
+          html += '<td>' + (val || '') + '</td>';
+        }
+      }
+      html += '</tr>';
+    }
+  }
+  html += '</tbody></table></div>';
+  if (rows.length) {
+    html += '<div style="margin-top:12px;font-size:12px;color:#888;text-align:right">총 ' + rows.length + '명</div>';
+  }
+  area.innerHTML = html;
+}
+
+// ── XHR 유틸 ─────────────────────────────────────────────
+function xhr(params, cb) {
+  var req = new XMLHttpRequest();
+  req.open('GET', APPS_SCRIPT_URL + '?' + params, true);
+  req.onreadystatechange = function() {
+    if (req.readyState === 4) {
+      if (req.status === 200) {
+        try { cb(null, JSON.parse(req.responseText)); }
+        catch(e) { cb(null, req.responseText); }
+      } else { cb('err'); }
+    }
+  };
+  req.send(null);
+}
+</script>
+</body>
+</html>
