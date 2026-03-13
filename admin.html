@@ -291,7 +291,21 @@ tr:last-child td { border-bottom: none; }
   color: #555;
   margin-bottom: 14px;
 }
+.kakao-btn {
+  width: 100%;
+  padding: 14px;
+  background: #FEE500;
+  color: #3C1E1E;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 10px;
+}
 </style>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -329,6 +343,9 @@ tr:last-child td { border-bottom: none; }
     </div>
     <div class="btn-wrap">
       <button class="primary-btn" id="saveBtn" onclick="saveMenus()">저장하기</button>
+      <button class="kakao-btn" id="kakaoBtn" onclick="shareKakao()" style="display:none">
+        <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" style="width:20px;height:20px;vertical-align:middle;margin-right:6px">카카오톡으로 공유
+      </button>
     </div>
   </div>
 
@@ -415,13 +432,28 @@ function addMenuRow(dateVal, menuVal) {
   var div = document.createElement('div');
   div.className = 'menu-input-row';
   div.id = 'row_' + id;
+  var onchange = (id === 0) ? ' onchange="autoFillDates(this.value)"' : '';
   div.innerHTML =
     '<div class="date-row">' +
-    '<input type="date" id="d_' + id + '" value="' + (dateVal || '') + '">' +
+    '<input type="date" id="d_' + id + '" value="' + (dateVal || '') + '"' + onchange + '>' +
     '<input type="text" id="m_' + id + '" placeholder="메뉴명" value="' + (menuVal || '') + '">' +
     '<button class="remove-btn" onclick="removeRow(' + id + ')">×</button>' +
     '</div>';
   container.appendChild(div);
+}
+
+function autoFillDates(firstDate) {
+  if (!firstDate) return;
+  var base = new Date(firstDate + 'T00:00:00');
+  for (var i = 1; i < 5; i++) {
+    var next = new Date(base);
+    next.setDate(base.getDate() + i);
+    var yyyy = next.getFullYear();
+    var mm = String(next.getMonth() + 1).padStart(2, '0');
+    var dd = String(next.getDate()).padStart(2, '0');
+    var el = document.getElementById('d_' + i);
+    if (el) el.value = yyyy + '-' + mm + '-' + dd;
+  }
 }
 
 function removeRow(id) {
@@ -465,6 +497,7 @@ function saveMenus() {
     if (err) { alert('저장 실패. 다시 시도해 주세요.'); return; }
     alert('메뉴가 저장되었습니다!');
     loadCurrentMenus();
+    document.getElementById('kakaoBtn').style.display = 'block';
   });
 }
 
@@ -597,7 +630,7 @@ function renderPivotTable(headers, rows) {
 // ── XHR 유틸 ─────────────────────────────────────────────
 function xhr(params, cb) {
   var req = new XMLHttpRequest();
-  req.open('GET', APPS_SCRIPT_URL + '?' + params, true);
+  req.open('GET', APPS_SCRIPT_URL + '?' + params + '&_t=' + Date.now(), true);
   req.onreadystatechange = function() {
     if (req.readyState === 4) {
       if (req.status === 200) {
@@ -607,6 +640,50 @@ function xhr(params, cb) {
     }
   };
   req.send(null);
+}
+
+function initKakao() {
+  if (typeof Kakao === 'undefined') return;
+  if (!Kakao.isInitialized()) {
+    Kakao.init('ea763d45b05dd0fa468661a5b78b7816'); // ← 카카오 JS 앱키 입력
+  }
+}
+
+function shareKakao() {
+  if (typeof Kakao === 'undefined') {
+    alert('카카오톡 SDK 로딩 중입니다. 잠시 후 다시 시도해 주세요.');
+    return;
+  }
+  initKakao();
+  var rows = document.getElementById('menuRows').querySelectorAll('.menu-input-row');
+  var menuText = '';
+  for (var i = 0; i < rows.length; i++) {
+    var id = rows[i].id.replace('row_', '');
+    var dEl = document.getElementById('d_' + id);
+    var mEl = document.getElementById('m_' + id);
+    if (dEl && mEl && dEl.value && mEl.value.trim()) {
+      menuText += dEl.value + ' ' + getDayKor(dEl.value) + ': ' + mEl.value.trim() + '\n';
+    }
+  }
+  Kakao.Share.sendDefault({
+    objectType: 'feed',
+    content: {
+      title: '고려대 FMBA 석식 신청',
+      description: menuText || '이번 주 메뉴를 확인하고 신청해 주세요.',
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Korea_University_Emblem.svg/240px-Korea_University_Emblem.svg.png',
+      link: {
+        mobileWebUrl: 'https://jakelee0807.github.io/select_dinner/student.html',
+        webUrl: 'https://jakelee0807.github.io/select_dinner/student.html'
+      }
+    },
+    buttons: [{
+      title: '석식 신청하기',
+      link: {
+        mobileWebUrl: 'https://jakelee0807.github.io/select_dinner/student.html',
+        webUrl: 'https://jakelee0807.github.io/select_dinner/student.html'
+      }
+    }]
+  });
 }
 </script>
 </body>
